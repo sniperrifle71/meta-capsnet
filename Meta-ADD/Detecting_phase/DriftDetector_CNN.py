@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from Capsnet import capsnet
 
 class Net50(nn.Module):
     """
@@ -65,12 +66,14 @@ class Net200(nn.Module):
 
 def Embeding(BASE_PATH, Data_Vector_Length):
     PATH = BASE_PATH+'/model_embeding.pkl'
-    if Data_Vector_Length == 50:
-        model_embeding = Net50()
-    elif Data_Vector_Length == 100:
-        model_embeding = Net100()
-    else:
-        model_embeding = Net200()
+#    if Data_Vector_Length == 50:
+#        model_embeding = Net50()
+#    elif Data_Vector_Length == 100:
+#        model_embeding = Net100()
+#    else:
+#        model_embeding = Net200()
+    if Data_Vector_Length == 100:
+        model_embeding = capsnet()
     model_embeding.load_state_dict(torch.load(PATH))
     return model_embeding
 
@@ -83,14 +86,18 @@ def InputData(input, model_embeding):
 #     return EmbedingData
 
 def InputEmbeding(input, BASE_PATH, Data_Vector_Length):
+    print(Data_Vector_Length)
     PATH = BASE_PATH+'/model_embeding.pkl'
-    if Data_Vector_Length == 50:
-        model_embeding = Net50()
-    elif Data_Vector_Length == 100:
-        model_embeding = Net100()
-    else:
-        model_embeding = Net200()
-    model_embeding.load_state_dict(torch.load(PATH))
+#    if Data_Vector_Length == 50:
+#        model_embeding = Net50()
+#    elif Data_Vector_Length == 100:
+#        model_embeding = Net100()
+#    else:
+#        model_embeding = Net200()
+    if Data_Vector_Length == 100:
+        model_embeding = capsnet().to('cpu')
+    model_embeding.load_state_dict(torch.load(PATH,map_location='cpu'))
+    model_embeding = model_embeding.cpu()
     return model_embeding(input), model_embeding
 
 def get_Input_Data(BASE_PATH):
@@ -114,6 +121,8 @@ def Detector(Query_x, BASE_PATH, Data_Vector_Length):
         1)).transpose(0, 1)  # Expanding Query matrix "n" times
     # Temp_A = centroid_matrix.transpose(1, 2)
     # Temp_B = Query_matrix.transpose(1, 2)
+    centroid_matrix = centroid_matrix.to('cpu')
+    Query_matrix = Query_matrix.to('cpu')
     Qx = torch.cosine_similarity(centroid_matrix.transpose(
         1, 2), Query_matrix.transpose(1, 2),dim=1)
     return Qx, model_embeding
@@ -121,7 +130,8 @@ def Detector(Query_x, BASE_PATH, Data_Vector_Length):
 def main(BASE_PATH, Data_Vector_Length):
     Test_Example_Data = get_Input_Data(BASE_PATH)
     Qx = Detector(Test_Example_Data, BASE_PATH, Data_Vector_Length)
-    pred = torch.log_softmax(Qx, dim=-1)
+    print(Qx[0])
+    pred = torch.log_softmax(Qx[0], dim=-1)
     # DataType: float
     Label = float((torch.argmax(pred, 1)[0]))
 
@@ -129,10 +139,10 @@ def main(BASE_PATH, Data_Vector_Length):
 
 if __name__ == "__main__":
     # File address
-    DATA_FILE = 'drift-200-25'
+    DATA_FILE = 'drift-100-25'
 
     # 50 OR 100 OR 200
-    Data_Vector_Length = 200
+    Data_Vector_Length = 100
 
-    BASE_PATH = 'input/model/CNN'+DATA_FILE
+    BASE_PATH = 'input/model/caps/'+DATA_FILE
     main(BASE_PATH, Data_Vector_Length)

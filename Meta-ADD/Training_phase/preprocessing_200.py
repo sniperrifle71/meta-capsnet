@@ -16,7 +16,7 @@ def preprocessingAbruptDriftData(feature_length, DATA_FILE):
 
     for single_file in all_file_list:
         single_data_frame = pd.read_csv(os.path.join(file_dir, single_file), sep=',', header=0)
-        # print(single_data_frame.iloc[:,[1]])
+        #print(single_data_frame.iloc[:,[1]])
         single_data_frame['gap'] = ((single_data_frame.iloc[:,[1]].shift(-1) - single_data_frame.iloc[:,[1]])
                                     /single_data_frame.iloc[:,[1]])
         train_data = single_data_frame[['gap']][:feature_length].T
@@ -124,3 +124,5 @@ def LoadDriftData(Data_Vector_Length, DATA_FILE):
     columnList.append('label')
     all_data_frame.columns = columnList
     return all_data_frame
+
+#preprocessingAbruptDriftData(100,"drift-100-25")

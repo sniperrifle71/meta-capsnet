@@ -37,7 +37,7 @@ Detecting phase:
 
 Datasets: save all experimental data. The experimental data are all .arff files and can be downloaded from https://moa.cms.waikato.ac.nz/datasets/
 data_handler.py: preprocess all experimental data
-external_ddm\hang.py: implemente the details of detecting drifts by our method Meta-ADD. In addition, this .py file will call the DriftDetector_CNN.py and DriftDetector_RNN.py.
+external_ddm\hang.py: implement the details of detecting drifts by our method Meta-ADD. In addition, this .py file will call the DriftDetector_CNN.py and DriftDetector_RNN.py.
 input\model: save meta-detector
 landmarkwindow.py: the main program
 stream_learning_lib.py: simulate the prequential prediction errors of a GaussianNB model.

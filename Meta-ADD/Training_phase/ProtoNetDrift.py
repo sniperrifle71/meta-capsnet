@@ -8,7 +8,7 @@ from tqdm import trange
 from time import sleep
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-
+from Capsnet import capsnet
 
 
 class Net50(nn.Module):
@@ -116,6 +116,9 @@ class PrototypicalNet(nn.Module):
                 self.f = Net100()
             else:
                 self.f = Net200()
+        elif ModelSelect == "caps":
+            if Data_Vector_Length == 100:
+                self.f = capsnet()
         # self.f = Net()
         self.gpu = use_gpu
         if self.gpu:
@@ -251,7 +254,7 @@ class PrototypicalNet(nn.Module):
         # print(Qx)
         return Qx
 
-
+#feature_length = 100
 def train_step(protonet, datax, datay, Ns, Nc, Nq, optimizer):
     optimizer.zero_grad()
     Qx, Qy, model_embeding = protonet(datax, datay, Ns, Nc, Nq, np.unique(datay))

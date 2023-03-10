@@ -12,21 +12,20 @@ from skmultiflow.drift_detection import HDDM_A
 from skmultiflow.drift_detection import HDDM_W
 from skmultiflow.drift_detection import PageHinkley
 from tqdm import tqdm
-
+from measurement import eddr
 import detection_delay_index as ddi
 from external_ddm.eddm import EDDM
 from external_ddm.kswin import KSWIN
-from external_ddm.hang import HANG
+from external_ddm.hang import Capsnet
 
 def eval_stream_on_all_skmultiflow_ddm(dataset_name, stream_X, stream_Y, train_size_min,
                                        learner, learner_param, target_ddi_t1):
     # ================================================= #
     # Initial drift detection algorithms for evaluation #
     # ================================================= #
-    #ddm_list = [ADWIN, DDM, EDDM, HDDM_A, HDDM_W, PageHinkley, KSWIN, HANG]
-    ddm_list = [HANG]
-    # ddm_list = [ADWIN, DDM, EDDM, HDDM_A, HDDM_W, PageHinkley, HANG]
-    # ddm_list= [KSWIN]
+    # ddm_list = [ADWIN, DDM, EDDM, HDDM_A, HDDM_W, PageHinkley, KSWIN, Capsnet]
+    ddm_list = [ADWIN, DDM, EDDM, HDDM_A, HDDM_W, PageHinkley, Capsnet]
+    # ddm_list = [Capsnet]
     ddm_name_list = []
     for ddm in ddm_list:
         ddm_name_list.append(ddm.__name__)
@@ -60,13 +59,14 @@ def eval_stream_on_all_skmultiflow_ddm(dataset_name, stream_X, stream_Y, train_s
     # ndd: number of detected drift
     # base_acc_cols = ['Dataset', 'DetectionMethod', 'acc_slide_chunk', 'acc_std_default', 'acc_val_single',
     #                  'acc_val_align', 'ndd_std_default', 'ndd_std_single', 'ndd_std_align']
-    base_acc_cols = ['Dataset', 'DetectionMethod', 'acc_slide_chunk', 'acc_std_default', 'ndd_std_default']
+    base_acc_cols = ['Dataset', 'DetectionMethod', 'acc_slide_chunk', 'acc_std_default', 'ndd_std_default','eddr']
     df_result = pd.DataFrame(columns=base_acc_cols)
 
     # =============================================================== #
     # Baseline: Evaluate Stream on chunk-based stream learning method #
     # =============================================================== #
     Y_pred = stream_learning_prequential_chunk(stream_X, stream_Y, train_size_min, learner, learner_param)
+    #准确率
     acc_slide_chunk = accuracy_score(stream_Y, Y_pred, normalize=True)
 
     for ddm_idx, ddm in enumerate(ddm_list):
@@ -83,6 +83,8 @@ def eval_stream_on_all_skmultiflow_ddm(dataset_name, stream_X, stream_Y, train_s
         # standard warn-drift level data stream learning
         Y_pred, ndd_std_default = stream_learning_prequential(**stream_learning_param)
         acc_std_default = accuracy_score(stream_Y, Y_pred, normalize=True)
+        edd_std_default = eddr(y_pred=Y_pred,stream_y=stream_Y,delay=10)
+
         endtime = datetime.datetime.now()
         print(endtime - starttime)
 
@@ -114,12 +116,14 @@ def eval_stream_on_all_skmultiflow_ddm(dataset_name, stream_X, stream_Y, train_s
         # df_row_ndd_base = [ndd_std_default, ndd_val_single, ndd_val_align]
         df_row_acc_base = [acc_std_default]
         df_row_ndd_base = [ndd_std_default]
+        df_row_eddr_base = [edd_std_default]
 
 
         df_row = []
         df_row += df_row_bas
         df_row += df_row_acc_base
         df_row += df_row_ndd_base
+        df_row+=df_row_eddr_base
         # print(len(df_row))
         # print("ddm_idx", ddm_idx)
         # print(df_result.shape)
@@ -224,12 +228,12 @@ def eval_stream_on_all_skmultiflow_ddm_backup(dataset_name, stream_X, stream_Y, 
         df_row_bas = [dataset_name, ddm.__name__, acc_slide_chunk]
         df_row_acc_base = [acc_std_default, acc_std_single, acc_std_optimi]
         df_row_ndd_base = [ndd_std_default, ndd_std_single, ndd_std_optimi]
-        df_row_acc_val_default = []
-        df_row_acc_val_single = []
-        df_row_acc_val_optimi = []
-        df_row_ndd_val_default = []
-        df_row_ndd_val_single = []
-        df_row_ndd_val_optimi = []
+        # df_row_acc_val_default = []
+        # df_row_acc_val_single = []
+        # df_row_acc_val_optimi = []
+        # df_row_ndd_val_default = []
+        # df_row_ndd_val_single = []
+        # df_row_ndd_val_optimi = []
 
         for valid_size in valid_size_list:
             # ========================================= #
@@ -238,8 +242,8 @@ def eval_stream_on_all_skmultiflow_ddm_backup(dataset_name, stream_X, stream_Y, 
             # ========================================= #
             stream_learning_param['ddm_param_table'] = None
             stream_learning_param['valid_size'] = valid_size
-            Y_pred, ndd_val_default = stream_learning_prequential(**stream_learning_param)
-            acc_val_default = accuracy_score(stream_Y, Y_pred, normalize=True)
+            # Y_pred, ndd_val_default = stream_learning_prequential(**stream_learning_param)
+            # acc_val_default = accuracy_score(stream_Y, Y_pred, normalize=True)
 
             # ========================================= #
             # Ablation 5. introducing local validataion #
@@ -247,8 +251,8 @@ def eval_stream_on_all_skmultiflow_ddm_backup(dataset_name, stream_X, stream_Y, 
             # ========================================= #
             stream_learning_param['ddm_param_table'] = ddm_param_table_df_default_no_warning
             stream_learning_param['valid_size'] = valid_size
-            Y_pred, ndd_val_single = stream_learning_prequential(**stream_learning_param)
-            acc_val_single = accuracy_score(stream_Y, Y_pred, normalize=True)
+            # Y_pred, ndd_val_single = stream_learning_prequential(**stream_learning_param)
+            # acc_val_single = accuracy_score(stream_Y, Y_pred, normalize=True)
 
             # ========================================= #
             # Ablation 6. introducing local validataion #
@@ -257,26 +261,26 @@ def eval_stream_on_all_skmultiflow_ddm_backup(dataset_name, stream_X, stream_Y, 
             # ========================================= #
             stream_learning_param['ddm_param_table'] = ddm_param_table_df
             stream_learning_param['valid_size'] = valid_size
-            Y_pred, ndd_val_optimi = stream_learning_prequential(**stream_learning_param)
-            acc_val_optimi = accuracy_score(stream_Y, Y_pred, normalize=True)
+            # Y_pred, ndd_val_optimi = stream_learning_prequential(**stream_learning_param)
+            # acc_val_optimi = accuracy_score(stream_Y, Y_pred, normalize=True)
 
-            df_row_acc_val_default.append(acc_val_default)
-            df_row_acc_val_single.append(acc_val_single)
-            df_row_acc_val_optimi.append(acc_val_optimi)
-            df_row_ndd_val_default.append(ndd_val_default)
-            df_row_ndd_val_single.append(ndd_val_single)
-            df_row_ndd_val_optimi.append(ndd_val_optimi)
+            # df_row_acc_val_default.append(acc_val_default)
+            # df_row_acc_val_single.append(acc_val_single)
+            # df_row_acc_val_optimi.append(acc_val_optimi)
+            # df_row_ndd_val_default.append(ndd_val_default)
+            # df_row_ndd_val_single.append(ndd_val_single)
+            # df_row_ndd_val_optimi.append(ndd_val_optimi)
 
         df_row = []
         df_row += df_row_bas
         df_row += df_row_acc_base
-        df_row += df_row_acc_val_default
-        df_row += df_row_acc_val_single
-        df_row += df_row_acc_val_optimi
-        df_row += df_row_ndd_base
-        df_row += df_row_ndd_val_default
-        df_row += df_row_ndd_val_single
-        df_row += df_row_ndd_val_optimi
+        # df_row += df_row_acc_val_default
+        # df_row += df_row_acc_val_single
+        # df_row += df_row_acc_val_optimi
+        # df_row += df_row_ndd_base
+        # df_row += df_row_ndd_val_default
+        # df_row += df_row_ndd_val_single
+        # df_row += df_row_ndd_val_optimi
         df_result.loc[ddm_idx] = df_row
 
         df_result[base_ndd_cols + dyna_ndd_cols] = df_result[base_ndd_cols + dyna_ndd_cols].astype(int)
@@ -385,7 +389,7 @@ def stream_learning_prequential(stream_X, stream_Y,
                                 train_size_min, train_buff_dict,
                                 target_ddi_t1=0.9999, valid_size=30, current_t=0):
     # ======================================= #
-    # Initialize training buffere and learner #
+    # Initialize training buffer and learner #
     # ======================================= #
     trai_buff_X = train_buff_dict['X']
     trai_buff_Y = train_buff_dict['Y']
@@ -417,7 +421,7 @@ def stream_learning_prequential(stream_X, stream_Y,
             # detect concept drift (learner performance change), drift level 
             detection_alg.add_element(np.abs(Y_ti - Y_ti_hat[0]))
             if detection_alg.detected_change():
-                # if detected a drift, then iterativly solve the substream by
+                # if detected a drift, then iteratively solve the substream by
                 # stream_learning_prequential_standard
                 Y_hat_list, num_drift_update = stream_learning_prequential(stream_X[ti + 1:],
                                                                            stream_Y[ti + 1:],

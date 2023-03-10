@@ -10,7 +10,7 @@ from DriftDetector_CNN import Detector
 #from DriftDetector_RNN import Detector
 
 
-class HANG(BaseDriftDetector):
+class Capsnet(BaseDriftDetector):
 
     def __init__(self, the_k=25, compare_window_len=1275):
         super().__init__()
@@ -33,7 +33,7 @@ class HANG(BaseDriftDetector):
         self.correct_sample = 0
         self.feature = []
         self.accuracyList = []
-        self.compare_window_len = 1275
+        self.compare_window_len = 2525
         self.sample_num = 0
 
     def add_element(self, prediction):
@@ -62,9 +62,8 @@ class HANG(BaseDriftDetector):
                     self.feature.append((self.accuracyList[j] - self.accuracyList[i])/self.accuracyList[i])
             # print("self.feature: ", self.feature)
             # prediction
-            BASE_PATH = 'input/model/FCN/drift-50-1/'
+            BASE_PATH = 'input/model/caps/drift-100-25/'
             Data_Vector_Length = self.compare_window_len/self.the_k - 1
-
             Qx, model_embeding = Detector(torch.tensor([self.feature]), BASE_PATH, Data_Vector_Length)
 
             #Qx = Detector(torch.tensor([self.feature]), BASE_PATH, Data_Vector_Length, 'RNN')

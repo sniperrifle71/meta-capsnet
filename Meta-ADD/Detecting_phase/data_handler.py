@@ -20,6 +20,7 @@ class DriftDataset():
         "spam": "3_RealData_UnknDrift/spam_corpus_x2_feature_selected.arff",
         "airl": "3_RealData_UnknDrift/airline.arff",
         "covt-binary": "3_RealData_UnknDrift/covtypeNormBinary.arff",
+        "kdd": "3_RealData_UnknDrift/KDDTrain+.arff",
         "poke-binary": "3_RealData_UnknDrift/PokerHandBinary.arff",
         "noaa_042700": "3_RealData_UnknDrift/noaa_042700.arff",
         "noaa_100370": "3_RealData_UnknDrift/noaa_100370.arff",

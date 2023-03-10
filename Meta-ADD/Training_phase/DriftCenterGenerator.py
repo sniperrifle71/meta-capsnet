@@ -3,8 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from preprocessing_200 import LoadDriftData
-
-
+from Capsnet import capsnet
 class Net50(nn.Module):
     """
     Image2Vector CNN which takes image of dimension (28x28x3) and return column vector length 64
@@ -98,18 +97,24 @@ class RNN(nn.Module):
 
 def InputEmbeding(input, BASE_PATH, Data_Vector_Length, ModelSelect):
     PATH = BASE_PATH + '/model_embeding.pkl'
-
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
     if ModelSelect == 'RNN':
-        model_embeding = RNN()
+        model_embeding = RNN().to(device)
     elif ModelSelect == 'FCN':
         if Data_Vector_Length == 50:
-            model_embeding = Net50()
+            model_embeding = Net50().to(device)
         elif Data_Vector_Length == 100:
-            model_embeding = Net100()
+            model_embeding = Net100().to(device)
         else:
-            model_embeding = Net200()
+            model_embeding = Net200().to(device)
+    elif ModelSelect == 'caps':
+        if Data_Vector_Length == 100:
+            model_embeding = capsnet().to(device)
 
-    model_embeding.load_state_dict(torch.load(PATH))
+    model_embeding.load_state_dict(torch.load(PATH,map_location=device))
     return model_embeding(input)
 
 def main(DATA_FILE, BASE_PATH, Data_Vector_Length, ModelSelect):
@@ -117,7 +122,6 @@ def main(DATA_FILE, BASE_PATH, Data_Vector_Length, ModelSelect):
     # Reading the data
     print('Reading the data')
     all_data_frame = LoadDriftData(Data_Vector_Length, DATA_FILE)
-
     Drift_data_array = all_data_frame.values
     where_are_nan = np.isnan(Drift_data_array)
     where_are_inf = np.isinf(Drift_data_array)
@@ -127,7 +131,10 @@ def main(DATA_FILE, BASE_PATH, Data_Vector_Length, ModelSelect):
 
     np.random.shuffle(Drift_data_array)
     Drift_data_tensor = torch.tensor(Drift_data_array)
-
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
     train_size = int(0.8 * len(Drift_data_tensor))
     train_drift_data = Drift_data_array[0:train_size, :]
     Drift_train_x, Drift_train_y = torch.tensor(train_drift_data).split(Data_Vector_Length, 1)
@@ -138,15 +145,19 @@ def main(DATA_FILE, BASE_PATH, Data_Vector_Length, ModelSelect):
 
     DATA_PATH = BASE_PATH + '/Test_Example_Data.pt'
     torch.save(Test_Example_Data, DATA_PATH)
-
-    Qx = centroid(Drift_train_x, Drift_train_y, 20, 4, np.unique(Drift_train_y), BASE_PATH, Data_Vector_Length, ModelSelect)
+    Drift_train_x = Drift_train_x.to(device)
+    Drift_train_y = Drift_train_y.to(device)
+    Qx = centroid(Drift_train_x, Drift_train_y, 20, 4, np.unique(Drift_train_y.cpu()), BASE_PATH, Data_Vector_Length, ModelSelect)
     pred = torch.log_softmax(Qx, dim=-1)
     Label = float((torch.argmax(pred, 1)[0]))
     print(Label)
     return Label
 
 def centroid(datax, datay, Ns, Nc, total_classes, BASE_PATH, Data_Vector_Length, ModelSelect):
-
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
     k = total_classes.shape[0]
     K = np.random.choice(total_classes, Nc, replace=False)
     Query_x = torch.Tensor()
@@ -155,9 +166,10 @@ def centroid(datax, datay, Ns, Nc, total_classes, BASE_PATH, Data_Vector_Length,
     centroid_per_class = {}
     class_label = {}
     for cls in total_classes:
-        S_cls = random_sample_cls(datax, datay, Ns, cls)
+        S_cls = random_sample_cls(datax.cpu(), datay.cpu(), Ns, cls)
+        S_cls = S_cls.to(device)
         centroid_per_class[cls] = torch.sum(InputEmbeding(S_cls.float(), BASE_PATH, Data_Vector_Length, ModelSelect), 0).unsqueeze(1).transpose(0, 1) / Ns
-    centroid_matrix = torch.Tensor()
+    centroid_matrix = torch.Tensor().to(device)
     for label in total_classes:
         centroid_matrix = torch.cat(
             (centroid_matrix, centroid_per_class[label]))
@@ -166,7 +178,7 @@ def centroid(datax, datay, Ns, Nc, total_classes, BASE_PATH, Data_Vector_Length,
     torch.save(centroid_matrix, DATA_PATH)
 
     DATA_PATH = BASE_PATH + '/Test_Example_Data.pt'
-    Test_Example_Data = torch.load(DATA_PATH)
+    Test_Example_Data = torch.load(DATA_PATH,map_location=device)
 
     Query_x = InputEmbeding(Test_Example_Data, BASE_PATH, Data_Vector_Length, ModelSelect)
     m = Query_x.size(0)
@@ -185,7 +197,7 @@ def random_sample_cls(datax, datay, Ns, cls):
     """
     Randomly samples Ns examples as support set and Nq as Query set
     """
-    datay = datay.numpy()
+    datay = datay.cpu().numpy()
     data = datax[(np.nonzero(datay == cls))[0]]
 
     perm = torch.randperm(data.shape[0])
@@ -198,10 +210,10 @@ def random_sample_cls(datax, datay, Ns, cls):
 
 if __name__ == "__main__":
     # File address
-    DATA_FILE = 'drift-50-1'
-    Data_Vector_Length = 50
-    ModelSelect = 'RNN' # 'RNN', 'FCN', 'Seq2Seq'
+    DATA_FILE = 'drift-100-25'
+    Data_Vector_Length = 100
+    ModelSelect = 'caps' # 'RNN', 'FCN', 'Seq2Seq'
 
-    BASE_PATH = '/home/tianyliu/Data/ConceptDrift/input/Model/'+ ModelSelect+'/'+DATA_FILE
+    BASE_PATH = './input/Model/'+ ModelSelect+'/'+DATA_FILE
 
     main(DATA_FILE, BASE_PATH, Data_Vector_Length, ModelSelect)

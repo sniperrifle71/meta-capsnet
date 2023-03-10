@@ -81,8 +81,8 @@ def get_Input_Data(BASE_PATH):
     Test_Example_Label = 3.0
 
     Data_Vector_Length = 50
-    DATA_FILE = 'drift-50-25'
-    ModelSelect = 'FCN'
+    DATA_FILE = 'drift-100-25'
+    ModelSelect = 'caps'
 
     DATA_PATH = BASE_PATH+'/Test_Example_Data.pt'
 
@@ -145,10 +145,10 @@ def main(BASE_PATH, Data_Vector_Length):
 
 if __name__ == "__main__":
     # File address
-    DATA_FILE = 'drift-50-25'
+    DATA_FILE = 'drift-100-25'
 
     # 50 OR 100 OR 200
     Data_Vector_Length = 50
 
-    BASE_PATH = '/home/tianyliu/Data/ConceptDrift/input/Model/'+DATA_FILE
+    BASE_PATH = './input/Model/caps/'+DATA_FILE
     main(BASE_PATH, Data_Vector_Length)

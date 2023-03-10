@@ -1,5 +1,6 @@
 # Check out the code in work at https://www.kaggle.com/hsankesara/prototypical-net/
 # Check out the blog at <COMING SOON>
+import os.path
 
 import torch
 import numpy as np  # linear algebra
@@ -9,9 +10,9 @@ from preprocessing_200 import LoadDriftData
 
 def main():
 
-    Data_Vector_Length = 200
-    DATA_FILE = 'drift-200-25'
-    ModelSelect = 'RNN' # 'RNN', 'FCN', 'Seq2Seq'
+    Data_Vector_Length = 100
+    DATA_FILE = 'drift-100-25'
+    ModelSelect = 'caps' # 'RNN', 'FCN', 'Seq2Seq','caps'
 
     # Reading the data
     print('Reading the data')
@@ -37,6 +38,7 @@ def main():
 
     print('Checking if GPU is available')
     use_gpu = torch.cuda.is_available()
+    print(use_gpu)
     # use_gpu = False
 
     # Converting input to pytorch Tensor
@@ -76,8 +78,12 @@ def main():
                   frame_size, 'Frame Accuracy:', (frame_acc.data.cpu().numpy().tolist() * 100) / frame_size)
             frame_loss = 0
             frame_acc = 0
-    PATH = '/home/tianyliu/Data/ConceptDrift/input/Model/'+ModelSelect+'/'+DATA_FILE+'/model_embeding.pkl'
-    torch.save(model_embeding.state_dict(), PATH)
+
+    PATH = './input/Model/'+ModelSelect+'/'+DATA_FILE
+    if not os.path.exists(PATH):
+        os.makedirs(PATH)
+    fileName = PATH+'/model_embeding.pkl'
+    torch.save(model_embeding.state_dict(), fileName)
 
     # Test loop
     num_test_episode = 5000

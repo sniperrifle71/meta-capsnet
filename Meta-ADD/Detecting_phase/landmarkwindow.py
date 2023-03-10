@@ -1,7 +1,6 @@
 from tqdm import tqdm
 import pandas as pd
 from sklearn.naive_bayes import GaussianNB
-
 import data_handler as dh
 import stream_learning_lib as sl_lib
 
@@ -40,6 +39,7 @@ def exp4_RealData_UnknDrift(learner, learner_param, target_ddi_t1):
     # dataset_name_list = ['elec', 'weat', 'spam', 'airl', 'covt-binary', 'poke-binary']
     # dataset_name_list = ['elec', 'weat', 'spam', 'airl', 'poke-binary']
     dataset_name_list = ['elec', 'weat', 'spam', 'airl']
+    #dataset_name_list = ['kdd']
     # dataset_name_list = ['elec', 'weat']
     # dataset_name_list = ['airl', 'poke-binary']
     # dataset_name_list = ['covt-binary']
@@ -72,10 +72,12 @@ if __name__ == "__main__":
     target_t1_list = [0.8]
     merged_result = []
     for t1 in target_t1_list:
-        # df_result = exp4_SyntData_SyntDrift(GaussianNB, {}, target_ddi_t1=t1)
-        # df_result = exp4_SyntData_SyntDrift(GaussianNB, {}, target_ddi_t1=t1)
-        df_result = exp4_RealData_UnknDrift(GaussianNB, {}, target_ddi_t1=t1)
-        df_result['TargetDDI'] = t1
-        merged_result.append(df_result)
+
+        df_result_SyntData = exp4_SyntData_SyntDrift(GaussianNB, {}, target_ddi_t1=t1)
+        df_result_RealData = exp4_RealData_UnknDrift(GaussianNB, {}, target_ddi_t1=t1)
+        df_result_RealData['TargetDDI'] = t1
+        df_result_SyntData['TargetDDI'] = t1
+        merged_result.append(df_result_RealData)
+        merged_result.append(df_result_SyntData)
     merged_result_df = pd.concat(merged_result)
-    #merged_result_df.to_csv('50-5-artificial-CNN.csv')
+    merged_result_df.to_csv('100-25-artificial-capsnet.csv')
