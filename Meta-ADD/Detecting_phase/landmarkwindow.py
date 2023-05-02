@@ -15,7 +15,7 @@ def exp4_SyntData_SyntDrift(learner, learner_param, target_ddi_t1):
     # dataset_name_list = ['AGRa', 'RTGn']
     # dataset_name_list = ['SEAa0', 'SEAg', 'HYPi', 'AGRg']
     # dataset_name_list = [ 'LEDa']
-    dataset_name_list = ['SEAa0', 'HYPi', 'AGRa', 'RTGn', 'RBFi']
+    dataset_name_list = ['SEAa0']
     # =====================================#
     # stream learning evaluation settings #
     # =====================================#
@@ -24,22 +24,22 @@ def exp4_SyntData_SyntDrift(learner, learner_param, target_ddi_t1):
     df_result_list = []
     for dataset_name in tqdm(dataset_name_list):
         stream = dh.DriftDataset(path, dataset_name).np_data
-        df_result = sl_lib.eval_stream_on_all_skmultiflow_ddm(dataset_name, stream[:, :-1], stream[:, -1],
+        df_result, drift = sl_lib.eval_stream_on_all_skmultiflow_ddm(dataset_name, stream[:, :-1], stream[:, -1],
                                                               train_size_min, learner, learner_param, target_ddi_t1)
         df_result_list.append(df_result)
 
     df_result_all = pd.concat(df_result_list, axis=0)
     df_result_all.reset_index(drop=True, inplace=True)
 
-    return df_result_all
+    return df_result_all,drift
 
 def exp4_RealData_UnknDrift(learner, learner_param, target_ddi_t1):
 
     path = "Datasets/"
     # dataset_name_list = ['elec', 'weat', 'spam', 'airl', 'covt-binary', 'poke-binary']
     # dataset_name_list = ['elec', 'weat', 'spam', 'airl', 'poke-binary']
-    dataset_name_list = ['elec', 'weat', 'spam', 'airl']
-    #dataset_name_list = ['kdd']
+    dataset_name_list = ['elec']
+    # dataset_name_list = ['weat']
     # dataset_name_list = ['elec', 'weat']
     # dataset_name_list = ['airl', 'poke-binary']
     # dataset_name_list = ['covt-binary']
@@ -73,11 +73,13 @@ if __name__ == "__main__":
     merged_result = []
     for t1 in target_t1_list:
 
-        df_result_SyntData = exp4_SyntData_SyntDrift(GaussianNB, {}, target_ddi_t1=t1)
-        df_result_RealData = exp4_RealData_UnknDrift(GaussianNB, {}, target_ddi_t1=t1)
-        df_result_RealData['TargetDDI'] = t1
-        df_result_SyntData['TargetDDI'] = t1
-        merged_result.append(df_result_RealData)
+        df_result_SyntData,drift= exp4_SyntData_SyntDrift(GaussianNB, {}, target_ddi_t1=t1)
+        #df_result_RealData,drift = exp4_RealData_UnknDrift(GaussianNB, {}, target_ddi_t1=t1)
+        #df_result_RealData['TargetDDI'] = t1
+        #df_result_SyntData['TargetDDI'] = t1
+        #merged_result.append(df_result_RealData)
         merged_result.append(df_result_SyntData)
-    merged_result_df = pd.concat(merged_result)
-    merged_result_df.to_csv('100-25-artificial-capsnet.csv')
+    print(drift)
+    df_drift = pd.DataFrame(drift)
+    df_drift.to_csv("PageHinkley.csv")
+

@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torchviz import make_dot
 
 
 def squash(x, dim=-1):
@@ -126,7 +127,7 @@ class capsnet(nn.Module):
         # Reconstruction layer
         self.decoder = nn.Sequential(
             nn.Linear(16 * 4, 30),
-            nn.ReLU(inplace=True)
+            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -146,3 +147,15 @@ class capsnet(nn.Module):
         reconstruction = self.decoder((out.view(batch_size, -1)))
 
         return reconstruction
+
+'''def main():
+    print("abc")
+    model = capsnet()
+    x = torch.randn(1, 100)
+    y = model(x)
+    net_structure = make_dot(y, params=dict(model.named_parameters()))
+    net_structure.view('capsnet.pdf')
+
+
+if __name__ == "__main__":
+    main()'''

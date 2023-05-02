@@ -11,7 +11,7 @@ from preprocessing_200 import LoadDriftData
 def main():
 
     Data_Vector_Length = 100
-    DATA_FILE = 'drift-100-25'
+    DATA_FILE = 'drift-200-25'
     ModelSelect = 'caps' # 'RNN', 'FCN', 'Seq2Seq','caps'
 
     # Reading the data

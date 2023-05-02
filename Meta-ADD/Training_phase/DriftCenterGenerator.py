@@ -210,7 +210,7 @@ def random_sample_cls(datax, datay, Ns, cls):
 
 if __name__ == "__main__":
     # File address
-    DATA_FILE = 'drift-100-25'
+    DATA_FILE = 'drift-200-25'
     Data_Vector_Length = 100
     ModelSelect = 'caps' # 'RNN', 'FCN', 'Seq2Seq'
 

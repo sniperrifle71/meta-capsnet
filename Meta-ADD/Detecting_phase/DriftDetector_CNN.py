@@ -66,12 +66,12 @@ class Net200(nn.Module):
 
 def Embeding(BASE_PATH, Data_Vector_Length):
     PATH = BASE_PATH+'/model_embeding.pkl'
-#    if Data_Vector_Length == 50:
-#        model_embeding = Net50()
+    if Data_Vector_Length == 50:
+        model_embeding = Net50()
 #    elif Data_Vector_Length == 100:
 #        model_embeding = Net100()
-#    else:
-#        model_embeding = Net200()
+    else:
+        model_embeding = Net200()
     if Data_Vector_Length == 100:
         model_embeding = capsnet()
     model_embeding.load_state_dict(torch.load(PATH))
@@ -80,22 +80,17 @@ def Embeding(BASE_PATH, Data_Vector_Length):
 def InputData(input, model_embeding):
     return model_embeding(input)
 
-# def InputEmbeding(input, BASE_PATH, Data_Vector_Length):
-#     model_embeding = Embeding(BASE_PATH, Data_Vector_Length)
-#     EmbedingData = InputData(input, model_embeding)
-#     return EmbedingData
 
 def InputEmbeding(input, BASE_PATH, Data_Vector_Length):
     print(Data_Vector_Length)
     PATH = BASE_PATH+'/model_embeding.pkl'
-#    if Data_Vector_Length == 50:
-#        model_embeding = Net50()
-#    elif Data_Vector_Length == 100:
-#        model_embeding = Net100()
-#    else:
-#        model_embeding = Net200()
-    if Data_Vector_Length == 100:
+    if Data_Vector_Length == 50:
+        model_embeding = Net50()
+    elif Data_Vector_Length == 100:
         model_embeding = capsnet().to('cpu')
+    else:
+        model_embeding = Net200()
+    print(PATH)
     model_embeding.load_state_dict(torch.load(PATH,map_location='cpu'))
     model_embeding = model_embeding.cpu()
     return model_embeding(input), model_embeding
@@ -139,10 +134,10 @@ def main(BASE_PATH, Data_Vector_Length):
 
 if __name__ == "__main__":
     # File address
-    DATA_FILE = 'drift-100-25'
+    DATA_FILE = 'FCN/drift-200-25'
 
     # 50 OR 100 OR 200
-    Data_Vector_Length = 100
+    Data_Vector_Length = 200
 
-    BASE_PATH = 'input/model/caps/'+DATA_FILE
+    BASE_PATH = 'input/model/'+DATA_FILE
     main(BASE_PATH, Data_Vector_Length)

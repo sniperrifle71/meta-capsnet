@@ -38,7 +38,7 @@ def generateAbruptDriftStream(max_samples, first_func, second_func, random_state
             n_samples += 1
 
         resultList.append(correct_cnt / iter_n_samples)
-        file_name = "input/Data/drift-100-25/abrupt/AGRAWALGenerator_" + str(first_func) + \
+        file_name = "input/Data/drift-200-25/abrupt/AGRAWALGenerator_" + str(first_func) + \
                     "_" + str(second_func) + "_" + str(random_state) + ".csv"
         DataFrame(resultList).to_csv(file_name)
 
@@ -74,7 +74,7 @@ def generateAbruptDriftStream_plus(max_samples, first_func, second_func, first_r
             n_samples += 1
 
         resultList.append(correct_cnt / iter_n_samples)
-        file_name = "input/Data/drift-100-25/abrupt/SEAGenerator_" + str(first_func) + \
+        file_name = "input/Data/drift-200-25/abrupt/SEAGenerator_" + str(first_func) + \
                     "_" + str(second_func) + "_" + str(first_random_state) + "_" + \
                     str(second_random_state) + "_" + str(all_random_state) \
                     + "_" + str(drift_pos) + ".csv"
@@ -113,7 +113,7 @@ def generateGradualDriftStream(max_samples, first_func, second_func,
             n_samples += 1
 
         resultList.append(correct_cnt / iter_n_samples)
-        file_name = "input/Data/drift-100-25/gradual/SEAGenerator_" + str(first_func) + \
+        file_name = "input/Data/drift-200-25/gradual/SEAGenerator_" + str(first_func) + \
                     "_" + str(second_func) + "_" + str(first_random_state) + "_" + \
                     str(second_random_state) + "_" + str(all_random_state) \
                     + "_" + str(drift_pos) + ".csv"
@@ -157,7 +157,7 @@ def generateIncrementalDriftStream(max_samples, random_state, first_mag_change, 
             n_samples += 1
 
         resultList.append(correct_cnt / iter_n_samples)
-        file_name = "input/Data/drift-100-25/incremental/HyperplaneGenerator_" + str(random_state) + \
+        file_name = "input/Data/drift-200-25/incremental/HyperplaneGenerator_" + str(random_state) + \
                     "_" + str(first_mag_change) + "_" + str(second_mag_change) + "_" \
                     + str(first_sig) + "_" + str(sec_sig) + "_" + str(drift_pos) + ".csv"
         DataFrame(resultList).to_csv(file_name)
@@ -190,7 +190,7 @@ def generateNormalStream(max_samples, GeneratorType, random_state, window_len):
                 n_samples += 1
 
             resultList.append(correct_cnt / iter_n_samples)
-            file_name = "input/Data/drift-100-25/normal/AGRAWALGenerator" + str(random_state) + ".csv"
+            file_name = "input/Data/drift-200-25/normal/AGRAWALGenerator" + str(random_state) + ".csv"
             DataFrame(resultList).to_csv(file_name)
 
     if GeneratorType == 1:
@@ -217,7 +217,7 @@ def generateNormalStream(max_samples, GeneratorType, random_state, window_len):
                 n_samples += 1
 
             resultList.append(correct_cnt / iter_n_samples)
-            file_name = "input/Data/drift-100-25/normal/HyperplaneGenerator" + str(random_state) + ".csv"
+            file_name = "input/Data/drift-200-25/normal/HyperplaneGenerator" + str(random_state) + ".csv"
             DataFrame(resultList).to_csv(file_name)
 
     if GeneratorType == 2:
@@ -244,7 +244,7 @@ def generateNormalStream(max_samples, GeneratorType, random_state, window_len):
                 n_samples += 1
 
             resultList.append(correct_cnt / iter_n_samples)
-            file_name = "input/Data/drift-100-25/normal/SEAGenerator" + str(random_state) + ".csv"
+            file_name = "input/Data/drift-200-25/normal/SEAGenerator" + str(random_state) + ".csv"
             DataFrame(resultList).to_csv(file_name)
 
     if GeneratorType == 3:
@@ -270,7 +270,7 @@ def generateNormalStream(max_samples, GeneratorType, random_state, window_len):
                 n_samples += 1
 
             resultList.append(correct_cnt / iter_n_samples)
-            file_name = "input/Data/drift-100-25/normal/LEDGenerator" + str(random_state) + ".csv"
+            file_name = "input/Data/drift-200-25/normal/LEDGenerator" + str(random_state) + ".csv"
             DataFrame(resultList).to_csv(file_name)
 
 
